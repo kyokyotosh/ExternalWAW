@@ -1,5 +1,5 @@
 #include "gui.h"
-
+#include "Common.h"
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_impl_dx9.h"
 #include "../imgui/imgui_impl_win32.h"
@@ -256,21 +256,51 @@ void gui::Render() noexcept
 	{
 			ImGui::Checkbox("God Mode", &check);
 
+			if (check)
+			{
+				if (hProcess && moneyAddr) {
+					static int health = 9999999;
+					if (!WriteProcessMemory(hProcess, (BYTE*)healthAddr, &health, sizeof(health), nullptr)) {
+						ImGui::Text("Failed to write Health to memory!");
+					}
+				}
+				else {
+					ImGui::Text("Process or FOV address not initialized!");
+				}
+			}
+
 			static int i0 = 0;
 			ImGui::InputInt("Money", &i0);
 			ImGui::SameLine();
 
 			static int clicked = 0;
 			
-			if (ImGui::Button("Button"))
+			if (ImGui::Button("Select"))
 				clicked++;
 			if (clicked & 1)
 			{
+				if (hProcess && moneyAddr) {
+					if (!WriteProcessMemory(hProcess, (BYTE*)moneyAddr, &i0, sizeof(i0), nullptr)) {
+						ImGui::Text("Failed to write FOV to memory!");
+					}
+				}
+				else {
+					ImGui::Text("Process or FOV address not initialized!");
+				}
 				ImGui::Text("Money changed, it will visually change when interact in-game.");
 			}
 
-			static float f1 = 0.0f;
-			ImGui::SliderFloat("FOV", &f1, 0.0f, 150.0f, "%.2f");
+			static float f1 = 65.0f; // Default FOV value
+			if (ImGui::SliderFloat("FOV", &f1, 30.0f, 120.0f, "%.2f")) {
+				if (hProcess && fovAddr) {
+					if (!WriteProcessMemory(hProcess, (BYTE*)fovAddr, &f1, sizeof(f1), nullptr)) {
+						ImGui::Text("Failed to write FOV to memory!");
+					}
+				}
+				else {
+					ImGui::Text("Process or FOV address not initialized!");
+				}
+			}
 	}
 
 	ImGui::End();
