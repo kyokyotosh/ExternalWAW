@@ -8,6 +8,7 @@ HANDLE hProcess = nullptr;
 uintptr_t fovAddr = 0;
 uintptr_t moneyAddr = 0;
 uintptr_t healthAddr = 0;
+uintptr_t recoilAddr = 0;
 
 int __stdcall wWinMain(
     HINSTANCE instance,
@@ -38,9 +39,18 @@ int __stdcall wWinMain(
 
     // Resolve Base Address of the Player pointer chain
     uintptr_t playerBaseAddr = moduleBase + 0x14ED068;
+	uintptr_t recoilBaseAddr = moduleBase + 0x5F28D;
     uintptr_t moneyBaseAddr = moduleBase + 0x14EF124;
     uintptr_t fovBaseAddr = moduleBase + 0x1DC4F98;
     uintptr_t healthBaseAddr = moduleBase + 0x136C8B8;
+
+    std::vector<unsigned int> recoilOffset = {  };
+    recoilAddr = FindDMAAddy(hProcess, recoilBaseAddr, recoilOffset);
+    if (recoilAddr == 0) {
+        std::cout << "Failed to resolve Recoil address" << std::endl;
+        CloseHandle(hProcess);
+        return EXIT_FAILURE;
+    }
 
     std::vector<unsigned int> moneyOffset = {  };
     moneyAddr = FindDMAAddy(hProcess, moneyBaseAddr, moneyOffset);

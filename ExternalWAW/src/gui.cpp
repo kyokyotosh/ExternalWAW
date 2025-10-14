@@ -251,12 +251,32 @@ void gui::Render() noexcept
 		ImGuiWindowFlags_NoMove
 	);
 
-	static bool check = false;
+	static bool checkGod = false;
+	static bool checkRecoil = false;
 	if (ImGui::CollapsingHeader("Player", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-			ImGui::Checkbox("God Mode", &check);
+			// No Recoil
+			ImGui::Checkbox("No Recoil", &checkRecoil);
 
-			if (check)
+			if (checkRecoil)
+			{
+				if (hProcess && recoilAddr) {
+					BYTE nopBytes[] = { 0x90, 0x90, 0x90, 0x90 };
+					size_t patchSize = sizeof(nopBytes);
+
+					if (!PatchMemory(hProcess, recoilAddr, nopBytes, patchSize)) {
+						ImGui::Text("Patch failed!");
+					}
+				}
+				else {
+					ImGui::Text("Process or FOV address not initialized!");
+				}
+			}
+
+			// God Mode
+			ImGui::Checkbox("God Mode", &checkGod);
+
+			if (checkGod)
 			{
 				if (hProcess && moneyAddr) {
 					static int health = 9999999;
@@ -269,6 +289,7 @@ void gui::Render() noexcept
 				}
 			}
 
+			// Money
 			static int i0 = 0;
 			ImGui::InputInt("Money", &i0);
 			ImGui::SameLine();
@@ -290,6 +311,7 @@ void gui::Render() noexcept
 				ImGui::Text("Money changed, it will visually change when interact in-game.");
 			}
 
+			// FOV
 			static float f1 = 65.0f; // Default FOV value
 			if (ImGui::SliderFloat("FOV", &f1, 30.0f, 120.0f, "%.2f")) {
 				if (hProcess && fovAddr) {
